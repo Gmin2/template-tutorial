@@ -2,7 +2,7 @@ from client import TemperatureServiceClient
 from random import randrange
 import time
 
-client = TemperatureServiceClient()
+client = TemperatureServiceClient(will_topic="last/will", will_payload="Client disconnected unexpectedly", will_qos=1, will_retain=True)
 
 id_length = 8
 min_value = 10**(id_length-1)  # Minimum value with 8 digits (e.g., 10000000)

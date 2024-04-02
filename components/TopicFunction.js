@@ -3,17 +3,25 @@
  * As input it requires a list of Channel models from the parsed AsyncAPI document
  */
 export function TopicFunction({ channels }) {
-    const topicsDetails = getTopics(channels)
-    let functions = ''
-  
-    topicsDetails.forEach((t) => {
-      functions += `def send${t.name}(self, id):
-          topic = "${t.topic}"
-          self.client.publish(topic, id)\n`
-    })
-  
-    return functions
-  }
+  const topicsDetails = getTopics(channels);
+  let functions = '';
+
+  topicsDetails.forEach((t) => {
+    if (t.subscribe) {
+      functions += `
+def subscribe${t.name}(self, callback, qos=0):
+    topic = "${t.topic}"
+    self.client.subscribe(topic, qos=qos)
+    self.client.on_message = callback\n`;
+    } else {
+      functions += `def send${t.name}(self, id, qos=0, retain=False):
+        topic = "${t.topic}"
+        self.client.publish(topic, id, qos=qos, retain=retain)\n`;
+    }
+  });
+
+  return functions;
+}
   
   /*
    * This function returns a list of objects, one for each channel with two properties, name and topic
